@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seared - The Perfect Steak Timer</title>
+  <!-- Google Fonts for premium steakhouse feel -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Runtime Error Reporter for Debugging -->
+  <script>
+    window.onerror = function(message, source, lineno, colno, error) {
+      const div = document.createElement('div');
+      div.style.position = 'fixed';
+      div.style.bottom = '0';
+      div.style.left = '0';
+      div.style.width = '100%';
+      div.style.backgroundColor = '#ef4444';
+      div.style.color = '#ffffff';
+      div.style.padding = '15px';
+      div.style.zIndex = '99999';
+      div.style.fontFamily = 'monospace';
+      div.style.fontSize = '14px';
+      div.style.lineHeight = '1.4';
+      div.style.boxShadow = '0 -4px 20px rgba(0,0,0,0.5)';
+      div.innerHTML = '<strong>🚨 JavaScript Error:</strong> ' + message + '<br><small>in ' + source + ' on line ' + lineno + ':' + colno + '</small>';
+      document.body.appendChild(div);
+      return false;
+    };
+  </script>
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <div class="logo">
+        <span class="fire-icon">🔥</span>
+        <h1>Seared</h1>
+        <p class="subtitle">The Perfect Steak Planner & Timer</p>
+      </div>
+    </header>
+
+    <main>
+      <!-- Section 1: Inputs / Configurator -->
+      <section id="config-section" class="card fade-in">
+        <h2 class="section-title">Configure Your Cook</h2>
+        <form id="steak-form" onsubmit="event.preventDefault();">
+          
+          <!-- Cut Selection -->
+          <div class="form-group">
+            <label class="group-label">1. Select Steak Cut</label>
+            <div class="grid-options cuts-grid">
+              <button type="button" class="option-card active" data-cut="ribeye">
+                <span class="card-icon">🥩</span>
+                <span class="card-name">Ribeye</span>
+                <span class="card-desc">Rich & marbled</span>
+              </button>
+              <button type="button" class="option-card" data-cut="ny-strip">
+                <span class="card-icon">🥩</span>
+                <span class="card-name">NY Strip</span>
+                <span class="card-desc">Bold & beefy</span>
+              </button>
+              <button type="button" class="option-card" data-cut="filet-mignon">
+                <span class="card-icon">🥩</span>
+                <span class="card-name">Filet Mignon</span>
+                <span class="card-desc">Lean & tender</span>
+              </button>
+              <button type="button" class="option-card" data-cut="sirloin">
+                <span class="card-icon">🥩</span>
+                <span class="card-name">Sirloin</span>
+                <span class="card-desc">Flavorful & firm</span>
+              </button>
+              <button type="button" class="option-card" data-cut="flank-skirt">
+                <span class="card-icon">🥩</span>
+                <span class="card-name">Flank / Skirt</span>
+                <span class="card-desc">Thin & intense</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Thickness -->
+          <div class="form-group">
+            <div class="label-with-value">
+              <label for="thickness">2. Thickness</label>
+              <span id="thickness-display" class="value-highlight">1.25" <span class="unit">(3.2 cm)</span></span>
+            </div>
+            <div class="slider-container">
+              <input type="range" id="thickness" min="0.5" max="3.0" step="0.25" value="1.25">
+              <div class="slider-ticks">
+                <span>0.5"</span>
+                <span>1.0"</span>
+                <span>1.5"</span>
+                <span>2.0"</span>
+                <span>2.5"</span>
+                <span>3.0"</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="two-column-grid">
+            <!-- Starting Temperature -->
+            <div class="form-group">
+              <label class="group-label">3. Initial Temperature</label>
+              <div class="grid-options col-3-grid">
+                <button type="button" class="option-card active" data-temp="fridge">
+                  <span class="card-icon">❄️</span>
+                  <span class="card-name">Fridge Cold</span>
+                  <span class="card-desc">~38°F / 3°C</span>
+                </button>
+                <button type="button" class="option-card" data-temp="room">
+                  <span class="card-icon">🌡️</span>
+                  <span class="card-name">Room Temp</span>
+                  <span class="card-desc">~70°F / 21°C</span>
+                </button>
+                <button type="button" class="option-card" data-temp="frozen">
+                  <span class="card-icon">🧊</span>
+                  <span class="card-name">Frozen</span>
+                  <span class="card-desc">~32°F / 0°C</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Cooking Surface -->
+            <div class="form-group">
+              <label class="group-label">4. Cooking Surface (for searing)</label>
+              <div class="grid-options col-4-grid">
+                <button type="button" class="option-card active" data-surface="cast-iron">
+                  <span class="card-icon">🍳</span>
+                  <span class="card-name">Cast Iron</span>
+                  <span class="card-desc">Max crust</span>
+                </button>
+                <button type="button" class="option-card" data-surface="stainless">
+                  <span class="card-icon">🍳</span>
+                  <span class="card-name">Stainless Steel</span>
+                  <span class="card-desc">Even heat</span>
+                </button>
+                <button type="button" class="option-card" data-surface="grill">
+                  <span class="card-icon">🔥</span>
+                  <span class="card-name">Outdoor Grill</span>
+                  <span class="card-desc">Smoky char</span>
+                </button>
+                <button type="button" class="option-card" data-surface="nonstick">
+                  <span class="card-icon">🍳</span>
+                  <span class="card-name">Non-Stick</span>
+                  <span class="card-desc">Easy care</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cooking Method -->
+          <div class="form-group">
+            <label class="group-label">5. Cooking Method</label>
+            <div class="grid-options col-4-grid">
+              <button type="button" class="option-card active" data-method="pan-sear">
+                <span class="card-icon">🔥</span>
+                <span class="card-name">Traditional Sear</span>
+                <span class="card-desc">Direct high heat</span>
+              </button>
+              <button type="button" class="option-card" data-method="oven-finish">
+                <span class="card-icon">🥘</span>
+                <span class="card-name">Oven Finish</span>
+                <span class="card-desc">Sear then bake</span>
+              </button>
+              <button type="button" class="option-card" data-method="reverse-sear">
+                <span class="card-icon">🥩</span>
+                <span class="card-name">Reverse Sear</span>
+                <span class="card-desc">Bake then sear</span>
+              </button>
+              <button type="button" class="option-card" data-method="sous-vide">
+                <span class="card-icon">🛁</span>
+                <span class="card-name">Sous-Vide</span>
+                <span class="card-desc">Bath then sear</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Desired Doneness -->
+          <div class="form-group">
+            <label class="group-label">6. Desired Doneness</label>
+            <div class="grid-options doneness-grid">
+              <button type="button" class="option-card" data-doneness="rare">
+                <span class="doneness-color rare"></span>
+                <span class="card-name">Rare</span>
+                <span class="card-desc">125°F / 52°C</span>
+              </button>
+              <button type="button" class="option-card active" data-doneness="med-rare">
+                <span class="doneness-color med-rare"></span>
+                <span class="card-name">Medium Rare</span>
+                <span class="card-desc">135°F / 57°C</span>
+              </button>
+              <button type="button" class="option-card" data-doneness="medium">
+                <span class="doneness-color medium"></span>
+                <span class="card-name">Medium</span>
+                <span class="card-desc">145°F / 63°C</span>
+              </button>
+              <button type="button" class="option-card" data-doneness="med-well">
+                <span class="doneness-color med-well"></span>
+                <span class="card-name">Medium Well</span>
+                <span class="card-desc">150°F / 66°C</span>
+              </button>
+              <button type="button" class="option-card" data-doneness="well">
+                <span class="doneness-color well"></span>
+                <span class="card-name">Well Done</span>
+                <span class="card-desc">160°F / 71°C</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Warning Message (dynamic) -->
+          <div id="safety-warning" class="warning-banner hidden">
+            <span class="warning-icon">⚠️</span>
+            <div class="warning-text">
+              <strong>Recommendation:</strong>
+              <span id="warning-message"></span>
+            </div>
+          </div>
+
+          <div class="action-bar">
+            <button type="button" id="calculate-btn" class="btn btn-primary">
+              <span>Generate Cook Plan</span>
+              <span class="btn-arrow">→</span>
+            </button>
+          </div>
+
+        </form>
+      </section>
+
+      <!-- Section 2: Plan & Recommendation -->
+      <section id="plan-section" class="card fade-in hidden">
+        <div class="back-link-container">
+          <button type="button" id="back-to-config" class="btn-link">← Adjust settings</button>
+        </div>
+        <h2 class="section-title">Your Custom Cooking Plan</h2>
+        
+        <div class="plan-summary-box">
+          <div class="summary-details">
+            <h3 id="recommendation-title">Reverse Sear Method</h3>
+            <p id="recommendation-desc">Best for thick-cut steaks to achieve a perfect edge-to-edge pink center with a deep crust.</p>
+          </div>
+          <div class="summary-meta">
+            <div class="meta-item">
+              <span class="meta-label">Total Est. Time</span>
+              <span id="total-time-val" class="meta-value">45 mins</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Target Temp</span>
+              <span id="target-temp-val" class="meta-value">130°F - 135°F</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-container">
+          <h3>Cooking Timeline</h3>
+          <ul id="timeline-list" class="timeline">
+            <!-- Dynamically populated stages -->
+          </ul>
+        </div>
+
+        <div class="tips-box">
+          <h3>💡 Chef Tips for this Cook</h3>
+          <ul id="chef-tips-list">
+            <!-- Dynamically populated tips -->
+          </ul>
+        </div>
+
+        <div class="action-bar">
+          <button type="button" id="start-timer-btn" class="btn btn-primary btn-glow">
+            <span>Start Cooking Timer</span>
+            <span class="btn-icon">⏱️</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Section 3: Active Timer -->
+      <section id="timer-section" class="card fade-in hidden">
+        <div class="timer-header">
+          <button type="button" id="view-plan-btn" class="btn-link">📋 Review Full Plan</button>
+          <div class="timer-status">
+            <span id="timer-stage-indicator">Stage 1 of 4</span>
+          </div>
+        </div>
+
+        <div class="timer-display-container">
+          <div class="circular-timer">
+            <svg class="progress-ring" width="280" height="280">
+              <circle class="progress-ring__circle-bg" stroke="rgba(255,255,255,0.05)" stroke-width="8" fill="transparent" r="130" cx="140" cy="140"/>
+              <circle class="progress-ring__circle" stroke="#f97316" stroke-width="8" fill="transparent" r="130" cx="140" cy="140"/>
+            </svg>
+            <div class="timer-numbers">
+              <span id="timer-clock">00:00</span>
+              <span id="timer-stage-title">Baking (Oven)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="current-instructions">
+          <h3 id="stage-desc-title">Oven Low-Temp Bake</h3>
+          <p id="stage-desc-text">Place the steak on a wire rack on a baking sheet. Insert a probe thermometer in the thickest part. Bake at 225°F until the internal temperature hits 115°F.</p>
+        </div>
+
+        <div class="timer-controls">
+          <button type="button" id="sound-toggle-btn" class="btn-circle" title="Toggle Sound">
+            <span class="btn-icon" id="sound-icon">🔊</span>
+          </button>
+          <button type="button" id="play-pause-btn" class="btn-circle btn-large btn-primary" title="Play / Pause">
+            <span class="btn-icon" id="play-pause-icon">▶️</span>
+          </button>
+          <button type="button" id="skip-stage-btn" class="btn-circle" title="Skip Stage">
+            <span class="btn-icon">⏭️</span>
+          </button>
+        </div>
+
+        <div class="timeline-mini">
+          <div class="progress-bar-steps" id="progress-bar-steps">
+            <!-- Dynamic step bubbles -->
+          </div>
+        </div>
+
+        <div class="action-bar reset-bar">
+          <button type="button" id="reset-timer-btn" class="btn btn-outline">Reset Timer</button>
+          <button type="button" id="exit-timer-btn" class="btn btn-outline" style="margin-left: 10px;">Exit Timer</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modal for reviewing the cook plan while cooking -->
+    <div id="plan-modal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title">Steak Cooking Plan</h3>
+          <button type="button" id="close-modal-btn" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="plan-summary-box" style="margin-bottom: 20px;">
+            <div class="summary-details">
+              <h4 id="modal-recommendation-title" style="font-family: var(--font-serif); color: var(--border-active); font-size: 1.25rem; margin-bottom: 4px;">Reverse Sear Method</h4>
+              <p id="modal-recommendation-desc" style="font-size: 0.8rem; color: var(--text-secondary);">Cooking description...</p>
+            </div>
+            <div class="summary-meta" style="gap: 16px;">
+              <div class="meta-item">
+                <span class="meta-label" style="font-size: 0.65rem;">Est. Time</span>
+                <span id="modal-total-time-val" class="meta-value" style="font-size: 1rem;">45m</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label" style="font-size: 0.65rem;">Target Temp</span>
+                <span id="modal-target-temp-val" class="meta-value" style="font-size: 1rem;">130°F</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-container">
+            <h4 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 12px;">Timeline Checklist</h4>
+            <ul id="modal-timeline-list" class="timeline">
+              <!-- Dynamic stages -->
+            </ul>
+          </div>
+
+          <div class="tips-box" style="margin-bottom: 0;">
+            <h4 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 12px;">💡 Chef Tips</h4>
+            <ul id="modal-chef-tips-list" style="padding-left: 18px; font-size: 0.82rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 6px;">
+              <!-- Dynamic tips -->
+            </ul>
+          </div>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; padding-top: 16px; border-top: 1px solid var(--border-color); margin-top: 16px;">
+          <button type="button" id="modal-close-action-btn" class="btn btn-primary" style="padding: 10px 20px; font-size: 0.85rem;">Close Plan</button>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>Enjoy your meal. Always check internal temperature with a digital meat thermometer for food safety.</p>
+    </footer>
+  </div>
+
+  <!-- Sound engine and application controller -->
+  <script src="app.js"></script>
+</body>
+</html>
