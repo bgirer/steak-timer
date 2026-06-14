@@ -1,0 +1,10 @@
+{
+    "configurations": [
+        {
+            "type": "chrome",
+            "name": "http://searedsteaktimer.com",
+            "request": "launch",
+            "url": "http://searedsteaktimer.com"
+        }
+    ]
+}
