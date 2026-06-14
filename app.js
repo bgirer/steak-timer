@@ -21,7 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
     isTimerRunning: false,
     isMuted: false,
     audioContext: null,
-    hasUserSelectedMethodManually: false
+    hasUserSelectedMethodManually: false,
+    isCookComplete: false
   };
 
   // --- CUT DETAILS & CHEF TIPS ---
@@ -133,18 +134,23 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- AUDIO SYNTHESIS ENGINE ---
   function initAudio() {
     if (!state.audioContext) {
-      state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      try {
+        state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      } catch (e) {
+        console.warn("AudioContext not supported by browser", e);
+      }
     }
   }
 
   function playSound(freq, duration, type = "sine") {
     if (state.isMuted) return;
     initAudio();
-    if (state.audioContext.state === "suspended") {
-      state.audioContext.resume();
-    }
-    
+    if (!state.audioContext) return;
     try {
+      if (state.audioContext.state === "suspended") {
+        state.audioContext.resume();
+      }
+      
       const osc = state.audioContext.createOscillator();
       const gain = state.audioContext.createGain();
       
@@ -169,6 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 3 short warning beeps
     playSound(880, 0.1);
     setTimeout(() => playSound(880, 0.1), 150);
+    setTimeout(() => playSound(880, 0.1), 300);
   }
 
   function alertStageChange() {
@@ -258,7 +265,13 @@ document.addEventListener("DOMContentLoaded", () => {
       updateThicknessDisplay(0.5);
     } else {
       selectors.thicknessInput.max = 3.0;
+      // Restore default thickness if it was previously set to thin cut bounds
+      if (parseFloat(selectors.thicknessInput.value) <= 1.0) {
+        selectors.thicknessInput.value = 1.25;
+        updateThicknessDisplay(1.25);
+      }
     }
+    state.thickness = parseFloat(selectors.thicknessInput.value);
     updateMethodRecommendation();
   });
 
@@ -291,14 +304,16 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // 1. Frozen steak warnings
     if (state.temp === "frozen") {
-      if (state.method === "sous-vide") {
-        warnings.push("Sous-vide is perfect for frozen steak! The algorithm will extend the bath duration by 50% to safely defrost and cook in one step.");
-      } else if (state.cut === "flank-skirt") {
+      if (state.cut === "flank-skirt") {
         warnings.push("Cooking thin frozen cuts like flank/skirt directly is not advised. Thaw completely in cold water first.");
-      } else if (state.method === "reverse-sear") {
-        warnings.push("Reverse searing a frozen steak directly is not recommended because low oven bake (225°F) takes too long to cross the danger zone from frozen. We recommend using Oven Finish (starts with high pan sear) or Sous-Vide.");
-      } else if (state.method === "pan-sear") {
-        warnings.push("Traditional pan searing a frozen steak is highly discouraged. The exterior will char black before the center thaws. Please defrost first, or select Oven Finish / Sous-Vide.");
+      } else {
+        if (state.method === "sous-vide") {
+          warnings.push("Sous-vide is perfect for frozen steak! The algorithm will extend the bath duration by 50% to safely defrost and cook in one step.");
+        } else if (state.method === "reverse-sear") {
+          warnings.push("Reverse searing a frozen steak directly is not recommended because low oven bake (225°F) takes too long to cross the danger zone from frozen. We recommend using Oven Finish (starts with high pan sear) or Sous-Vide.");
+        } else if (state.method === "pan-sear") {
+          warnings.push("Traditional pan searing a frozen steak is highly discouraged. The exterior will char black before the center thaws. Please defrost first, or select Oven Finish / Sous-Vide.");
+        }
       }
     }
     
@@ -642,6 +657,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function initTimer() {
     clearInterval(state.timerIntervalId);
     state.currentStageIndex = 0;
+    state.isCookComplete = false;
     setupActiveStage();
     renderMiniTimelineBubbles();
   }
@@ -672,6 +688,27 @@ document.addEventListener("DOMContentLoaded", () => {
     updateMiniTimelineBubbles();
   }
 
+  function updateTimelineHighlighting(isDone = false) {
+    const timelineItems = selectors.timelineList.children;
+    const modalTimelineItems = selectors.modalTimelineList.children;
+    
+    for (let i = 0; i < timelineItems.length; i++) {
+      if (!isDone && i === state.currentStageIndex) {
+        timelineItems[i].classList.add("active");
+      } else {
+        timelineItems[i].classList.remove("active");
+      }
+    }
+    
+    for (let i = 0; i < modalTimelineItems.length; i++) {
+      if (!isDone && i === state.currentStageIndex) {
+        modalTimelineItems[i].classList.add("active");
+      } else {
+        modalTimelineItems[i].classList.remove("active");
+      }
+    }
+  }
+
   function updateMiniTimelineBubbles() {
     const bubbles = selectors.progressBarSteps.children;
     for (let i = 0; i < bubbles.length; i++) {
@@ -682,6 +719,7 @@ document.addEventListener("DOMContentLoaded", () => {
         bubbles[i].classList.add("current");
       }
     }
+    updateTimelineHighlighting(false);
   }
 
   function updateProgressRing() {
@@ -691,6 +729,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function startTimer() {
+    if (state.isCookComplete) return;
     initAudio();
     if (state.timerIntervalId) return;
     
@@ -730,6 +769,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setupActiveStage();
     } else {
       // All stages completed!
+      state.isCookComplete = true;
       pauseTimer();
       alertCookComplete();
       selectors.timerClock.innerText = "DONE";
@@ -746,6 +786,7 @@ document.addEventListener("DOMContentLoaded", () => {
     for (let i = 0; i < bubbles.length; i++) {
       bubbles[i].className = "step-bubble completed";
     }
+    updateTimelineHighlighting(true);
   }
 
   // --- BUTTON CLICKS & ROUTING ---
@@ -799,6 +840,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   selectors.skipStageBtn.addEventListener("click", () => {
+    if (state.isCookComplete) return;
     // If running, warn and transition
     if (state.currentStageIndex < state.stages.length - 1) {
       state.currentStageIndex++;
