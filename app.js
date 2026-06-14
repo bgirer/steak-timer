@@ -74,40 +74,40 @@ document.addEventListener("DOMContentLoaded", () => {
     configSection: document.getElementById("config-section"),
     planSection: document.getElementById("plan-section"),
     timerSection: document.getElementById("timer-section"),
-    
+
     thicknessInput: document.getElementById("thickness"),
     thicknessDisplay: document.getElementById("thickness-display"),
-    
+
     safetyWarning: document.getElementById("safety-warning"),
     warningMessage: document.getElementById("warning-message"),
-    
+
     calculateBtn: document.getElementById("calculate-btn"),
-    
+
     backToConfigBtn: document.getElementById("back-to-config"),
-    
+
     recommendationTitle: document.getElementById("recommendation-title"),
     recommendationDesc: document.getElementById("recommendation-desc"),
     totalTimeVal: document.getElementById("total-time-val"),
     targetTempVal: document.getElementById("target-temp-val"),
     timelineList: document.getElementById("timeline-list"),
     chefTipsList: document.getElementById("chef-tips-list"),
-    
+
     startTimerBtn: document.getElementById("start-timer-btn"),
-    
+
     timerClock: document.getElementById("timer-clock"),
     timerStageTitle: document.getElementById("timer-stage-title"),
     timerStageIndicator: document.getElementById("timer-stage-indicator"),
     stageDescTitle: document.getElementById("stage-desc-title"),
     stageDescText: document.getElementById("stage-desc-text"),
     progressBarSteps: document.getElementById("progress-bar-steps"),
-    
+
     playPauseBtn: document.getElementById("play-pause-btn"),
     playPauseIcon: document.getElementById("play-pause-icon"),
     skipStageBtn: document.getElementById("skip-stage-btn"),
     resetTimerBtn: document.getElementById("reset-timer-btn"),
     soundToggleBtn: document.getElementById("sound-toggle-btn"),
     soundIcon: document.getElementById("sound-icon"),
-    
+
     circleProgress: document.querySelector(".progress-ring__circle"),
 
     // Modal & Exit elements
@@ -116,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
     closeModalBtn: document.getElementById("close-modal-btn"),
     modalCloseActionBtn: document.getElementById("modal-close-action-btn"),
     exitTimerBtn: document.getElementById("exit-timer-btn"),
-    
+
     modalRecommendationTitle: document.getElementById("modal-recommendation-title"),
     modalRecommendationDesc: document.getElementById("modal-recommendation-desc"),
     modalTotalTimeVal: document.getElementById("modal-total-time-val"),
@@ -150,20 +150,20 @@ document.addEventListener("DOMContentLoaded", () => {
       if (state.audioContext.state === "suspended") {
         state.audioContext.resume();
       }
-      
+
       const osc = state.audioContext.createOscillator();
       const gain = state.audioContext.createGain();
-      
+
       osc.connect(gain);
       gain.connect(state.audioContext.destination);
-      
+
       osc.type = type;
       osc.frequency.value = freq;
-      
+
       gain.gain.setValueAtTime(0, state.audioContext.currentTime);
       gain.gain.linearRampToValueAtTime(0.15, state.audioContext.currentTime + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.0001, state.audioContext.currentTime + duration);
-      
+
       osc.start(state.audioContext.currentTime);
       osc.stop(state.audioContext.currentTime + duration);
     } catch (e) {
@@ -198,11 +198,11 @@ document.addEventListener("DOMContentLoaded", () => {
       card.addEventListener("click", () => {
         cards.forEach(c => c.classList.remove("active"));
         card.classList.add("active");
-        
+
         // Extract attribute value
         const value = card.dataset[stateProperty];
         state[stateProperty] = value;
-        
+
         if (callback) callback(value);
         validateInputs();
       });
@@ -229,14 +229,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateMethodRecommendation() {
     const recommendedMethod = getRecommendedMethod();
     const methodCards = document.querySelectorAll("[data-method]");
-    
+
     methodCards.forEach(card => {
       const methodVal = card.dataset.method;
-      
+
       // Remove any existing recommended badge
       const badge = card.querySelector(".recommended-badge");
       if (badge) badge.remove();
-      
+
       if (methodVal === recommendedMethod) {
         const span = document.createElement("span");
         span.className = "recommended-badge";
@@ -301,7 +301,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- INPUT VALIDATION & SAFETY WARNINGS ---
   function validateInputs() {
     let warnings = [];
-    
+
     // 1. Frozen steak warnings
     if (state.temp === "frozen") {
       if (state.cut === "flank-skirt") {
@@ -316,7 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     }
-    
+
     // 2. Thickness & Method mismatches
     if (state.thickness >= 1.5 && state.method === "pan-sear" && state.temp !== "frozen") {
       warnings.push(`A ${state.thickness}" steak is too thick for a traditional pan sear. The exterior will burn before the interior reaches doneness. We highly suggest selecting <strong>Reverse Sear</strong> or <strong>Oven Finish</strong>.`);
@@ -352,12 +352,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const surface = state.surface;
     const doneness = state.doneness;
     const method = state.method;
-    
+
     let targetTemp = "";
     let donenessName = "";
-    
+
     // Set Target Temperature Label based on Doneness
-    switch(doneness) {
+    switch (doneness) {
       case "rare":
         targetTemp = "120°F - 125°F (49°C - 52°C)";
         donenessName = "Rare";
@@ -379,7 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
         donenessName = "Well Done";
         break;
     }
-    
+
     state.targetTemp = targetTemp;
 
     // STAGES ARRAY GENERATION
@@ -414,7 +414,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (method === "pan-sear") {
       // Direct Pan Sear or Grill
       let totalSear = Math.max(120, Math.round((baseSearTime + donenessSeconds + thicknessSeconds + startTempSeconds) * surfaceMultiplier));
-      
+
       let sear1 = Math.round(totalSear * 0.45);
       let sear2 = Math.round(totalSear * 0.35);
       let baste = Math.round(totalSear * 0.20);
@@ -462,7 +462,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Pan Sear first, then finish in Oven
       let sear1 = Math.round(60 * surfaceMultiplier);
       let sear2 = Math.round(60 * surfaceMultiplier);
-      
+
       // Calculate Oven Bake Time
       let baseOvenTime = 300; // 5 mins
       let thicknessOven = (thickness - 1.25) * 480; // 8 mins per inch
@@ -509,7 +509,7 @@ document.addEventListener("DOMContentLoaded", () => {
       let baseOvenTime = 2100; // 35 mins
       let thicknessOven = (thickness - 1.5) * 1200; // 20 mins per inch
       let tempOven = (temp === "fridge") ? 300 : 0;
-      
+
       let donenessOven = 0;
       if (doneness === "rare") donenessOven = -420;
       if (doneness === "medium") donenessOven = 480;
@@ -518,7 +518,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       let ovenDuration = Math.max(900, Math.round(baseOvenTime + thicknessOven + tempOven + donenessOven));
       let ovenTemp = "225°F (107°C)";
-      
+
       let coolRest = 120; // 2 min air cool rest before sear
       let sear1 = Math.round(60 * surfaceMultiplier);
       let sear2 = Math.round(60 * surfaceMultiplier);
@@ -557,9 +557,9 @@ document.addEventListener("DOMContentLoaded", () => {
       let baseBathTime = 3600; // 1 hour in seconds
       let thicknessBath = (thickness - 1.0) * 1800; // 30 mins per half inch
       if (temp === "frozen") baseBathTime *= 1.5; // 50% longer for frozen
-      
+
       let bathDuration = Math.round(baseBathTime + thicknessBath);
-      
+
       let sear1 = Math.round(45 * surfaceMultiplier);
       let sear2 = Math.round(45 * surfaceMultiplier);
       let rest = 120; // 2 mins rest
@@ -666,14 +666,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const stage = state.stages[state.currentStageIndex];
     state.timerSecondsLeft = stage.duration;
     state.timerTotalDuration = stage.duration;
-    
+
     selectors.timerClock.innerText = formatTime(state.timerSecondsLeft);
     selectors.timerStageTitle.innerText = stage.title;
     selectors.stageDescTitle.innerText = stage.title;
     selectors.stageDescText.innerText = stage.desc;
-    
+
     selectors.timerStageIndicator.innerText = `Stage ${state.currentStageIndex + 1} of ${state.stages.length}`;
-    
+
     updateProgressRing();
     updateMiniTimelineBubbles();
   }
@@ -691,7 +691,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateTimelineHighlighting(isDone = false) {
     const timelineItems = selectors.timelineList.children;
     const modalTimelineItems = selectors.modalTimelineList.children;
-    
+
     for (let i = 0; i < timelineItems.length; i++) {
       if (!isDone && i === state.currentStageIndex) {
         timelineItems[i].classList.add("active");
@@ -699,7 +699,7 @@ document.addEventListener("DOMContentLoaded", () => {
         timelineItems[i].classList.remove("active");
       }
     }
-    
+
     for (let i = 0; i < modalTimelineItems.length; i++) {
       if (!isDone && i === state.currentStageIndex) {
         modalTimelineItems[i].classList.add("active");
@@ -732,13 +732,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (state.isCookComplete) return;
     initAudio();
     if (state.timerIntervalId) return;
-    
+
     state.isTimerRunning = true;
     selectors.playPauseIcon.innerText = "⏸️";
-    
+
     state.timerIntervalId = setInterval(() => {
       state.timerSecondsLeft--;
-      
+
       // Update UI Clock & progress ring
       selectors.timerClock.innerText = formatTime(state.timerSecondsLeft);
       updateProgressRing();
@@ -876,7 +876,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getSurfaceName(surface) {
-    switch(surface) {
+    switch (surface) {
       case "cast-iron": return "cast iron skillet";
       case "stainless": return "stainless steel pan";
       case "grill": return "outdoor grill";
@@ -886,7 +886,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getMethodName(method) {
-    switch(method) {
+    switch (method) {
       case "pan-sear": return "Traditional Pan Sear / Grill";
       case "oven-finish": return "Sear & Oven Finish";
       case "reverse-sear": return "Reverse Sear (Bake then Sear)";
@@ -896,7 +896,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getMethodDesc(method, thickness, doneness) {
-    switch(method) {
+    switch (method) {
       case "pan-sear":
         return `Ideal for thin-cut steaks (${thickness}"). Direct high heat cooks the center quickly while developing an outstanding outer crust.`;
       case "oven-finish":
